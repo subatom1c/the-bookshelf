@@ -26,7 +26,6 @@ the-bookshelf/
 ```
 
 # Dependencies
-To get book covers
 ```text
 python3 -m venv venv
 source venv/bin/activate
