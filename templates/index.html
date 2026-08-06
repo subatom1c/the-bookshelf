@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookshelf</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  </head>
+
+  <body>
+    <!-- Library view -->
+    <div id="library">
+      <header id="topbar">
+        <h1>Bookshelf</h1>
+        <nav id="tabs">
+          <button class="tab active" data-tab="all">All</button>
+          <button class="tab" data-tab="favorites">Favorites</button>
+        </nav>
+      </header>
+      <div id="book-list"></div>
+      <p id="empty-msg" style="display: none;">No favorites yet — tap the star on a book.</p>
+    </div>
+
+    <!-- Reader view -->
+    <div id="reader" style="display: none;">
+      <div id="reader-controls">
+        <button id="back" onclick="goToMenu()">Menu</button>
+        <button id="fav-toggle" title="Favorite">☆</button>
+        <button id="notes-toggle" title="Notes">Notes</button>
+        <button id="hide-controls" title="Hide controls">Hide</button>
+      </div>
+      <!-- Small handle to bring controls back in immersive mode -->
+      <button id="show-controls" title="Show controls" style="display: none;">☰</button>
+
+      <iframe id="viewer"></iframe>
+
+      <aside id="notes-panel" style="display: none;">
+        <div id="notes-header">
+          <span>Notes</span>
+          <span id="notes-status"></span>
+        </div>
+        <textarea id="notes-text" placeholder="Write your notes about this book…"></textarea>
+      </aside>
+    </div>
+
+    <script src="/js/script.js"></script>
+  </body>
+</html>

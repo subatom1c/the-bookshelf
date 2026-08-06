@@ -1,0 +1,204 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 1rem;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: #14110f;
+  color: #f2ede4;
+}
+
+/* --- Top bar & tabs --- */
+#topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+#topbar h1 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+#tabs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tab {
+  padding: 0.4rem 1rem;
+  font-size: 0.95rem;
+  color: #f2ede4;
+  background: transparent;
+  border: 1px solid #3a332d;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.tab.active {
+  color: #14110f;
+  background: #f2ede4;
+  border-color: #f2ede4;
+}
+
+#empty-msg {
+  color: #9c9187;
+  text-align: center;
+  margin-top: 2rem;
+}
+
+/* --- Book grid --- */
+#book-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1.25rem;
+}
+
+.book {
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.15s ease;
+}
+
+.book:hover {
+  transform: translateY(-4px);
+}
+
+.cover-wrap {
+  position: relative;
+}
+
+.book img {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 6px;
+  background: #2a2521;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.book p {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+  line-height: 1.3;
+}
+
+.star {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 2rem;
+  height: 2rem;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: #f2ede4;
+  background: rgba(20, 17, 15, 0.6);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.star.on {
+  color: #ffce54;
+}
+
+/* --- Reader --- */
+#reader {
+  position: fixed;
+  inset: 0;
+  background: #14110f;
+}
+
+#viewer {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+#reader-controls {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 10;
+  display: flex;
+  gap: 0.5rem;
+}
+
+#reader-controls button,
+#show-controls {
+  padding: 0.5rem 0.9rem;
+  font-size: 1rem;
+  color: #14110f;
+  background: #f2ede4;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+#fav-toggle.on {
+  color: #ffce54;
+  background: #2a2521;
+}
+
+/* Small handle to restore controls in immersive mode */
+#show-controls {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 10;
+  opacity: 0.55;
+}
+
+#show-controls:hover {
+  opacity: 1;
+}
+
+/* --- Notes drawer --- */
+#notes-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 9;
+  display: flex;
+  flex-direction: column;
+  width: min(360px, 85vw);
+  height: 100%;
+  padding: 1rem;
+  padding-top: 3.5rem;
+  background: #1d1916;
+  border-left: 1px solid #3a332d;
+  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.5);
+}
+
+#notes-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+#notes-status {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: #9c9187;
+}
+
+#notes-text {
+  flex: 1;
+  resize: none;
+  padding: 0.75rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: #f2ede4;
+  background: #14110f;
+  border: 1px solid #3a332d;
+  border-radius: 6px;
+}

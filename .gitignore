@@ -1,0 +1,5 @@
+*.pdf
+nmap.txt
+venv
+covers/*
+library.json
