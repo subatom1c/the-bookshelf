@@ -16,8 +16,11 @@
         <nav id="tabs">
           <button class="tab active" data-tab="all">All</button>
           <button class="tab" data-tab="favorites">Favorites</button>
+          <button id="publish-btn" class="tab" title="Publish a PDF">+ Publish</button>
         </nav>
       </header>
+      <input id="publish-input" type="file" accept="application/pdf" hidden>
+      <p id="publish-status" style="display: none;"></p>
       <div id="book-list"></div>
       <p id="empty-msg" style="display: none;">No favorites yet — tap the star on a book.</p>
     </div>

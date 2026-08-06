@@ -52,6 +52,17 @@ body {
   margin-top: 2rem;
 }
 
+#publish-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+#publish-status {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  color: #9c9187;
+}
+
 /* --- Book grid --- */
 #book-list {
   display: grid;

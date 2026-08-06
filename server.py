@@ -2,9 +2,13 @@ import json
 from pathlib import Path
 from urllib.parse import quote
 
+import pymupdf
 from flask import Flask, jsonify, render_template, request, send_from_directory
 
 app = Flask(__name__)
+
+# 2x zoom for a sharper cover thumbnail (matches generate_covers.py)
+COVER_ZOOM = pymupdf.Matrix(2, 2)
 
 BASE_DIR = Path(__file__).resolve().parent
 BOOKS_DIR = BASE_DIR / "books"
@@ -86,6 +90,38 @@ def set_notes():
     return jsonify({"ok": True})
 
 
+@app.route("/api/publish", methods=["POST"])
+def publish():
+    """Accept a PDF upload from anyone, store it in books/, render its cover."""
+    upload = request.files.get("pdf")
+    if upload is None or not upload.filename:
+        return jsonify({"error": "no file provided"}), 400
+
+    # Keep only the base name so a crafted filename can't escape books/.
+    name = Path(upload.filename).name
+    if not name.lower().endswith(".pdf"):
+        return jsonify({"error": "only PDF files are allowed"}), 400
+
+    BOOKS_DIR.mkdir(exist_ok=True)
+    dest = BOOKS_DIR / name
+    if dest.exists():
+        return jsonify({"error": "a book with that name already exists"}), 409
+
+    upload.save(dest)
+
+    # Reject anything that isn't actually a readable PDF, and build the cover.
+    COVERS_DIR.mkdir(exist_ok=True)
+    try:
+        with pymupdf.open(dest) as doc:
+            page = doc.load_page(0)
+            page.get_pixmap(matrix=COVER_ZOOM).save(COVERS_DIR / f"{dest.stem}.png")
+    except Exception:
+        dest.unlink(missing_ok=True)
+        return jsonify({"error": "file is not a valid PDF"}), 400
+
+    return jsonify({"ok": True, "id": dest.stem})
+
+
 @app.route("/books/<path:filename>")
 def serve_book(filename):
     return send_from_directory(BOOKS_DIR, filename)
@@ -112,4 +148,7 @@ def favicon():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # Listen on all interfaces, port 80, so the bookshelf is reachable from
+    # other devices on the network / the public internet. Port 80 is
+    # privileged, so this must run as root (e.g. `sudo python server.py`).
+    app.run(host="0.0.0.0", port=80)

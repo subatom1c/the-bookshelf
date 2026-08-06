@@ -2,7 +2,10 @@
 const library = document.getElementById("library");
 const bookList = document.getElementById("book-list");
 const emptyMsg = document.getElementById("empty-msg");
-const tabs = document.querySelectorAll(".tab");
+const tabs = document.querySelectorAll(".tab[data-tab]");
+const publishBtn = document.getElementById("publish-btn");
+const publishInput = document.getElementById("publish-input");
+const publishStatus = document.getElementById("publish-status");
 
 const reader = document.getElementById("reader");
 const viewer = document.getElementById("viewer");
@@ -165,3 +168,39 @@ function saveNotes() {
     .then(() => { notesStatus.textContent = "Saved"; })
     .catch(() => { notesStatus.textContent = "Save failed"; });
 }
+
+// --- Publish a PDF ---
+function showPublishStatus(message, isError) {
+  publishStatus.textContent = message;
+  publishStatus.style.color = isError ? "#e57373" : "#9c9187";
+  publishStatus.style.display = "block";
+}
+
+publishBtn.addEventListener("click", () => publishInput.click());
+
+publishInput.addEventListener("change", () => {
+  const file = publishInput.files[0];
+  if (!file) return;
+
+  showPublishStatus(`Publishing “${file.name}”…`, false);
+  publishBtn.disabled = true;
+
+  const form = new FormData();
+  form.append("pdf", file);
+
+  fetch("/api/publish", { method: "POST", body: form })
+    .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
+    .then(({ ok, data }) => {
+      if (!ok) throw new Error(data.error || "publish failed");
+      showPublishStatus(`Published “${file.name}”.`, false);
+      // Reload the library so the new book (and its cover) appear.
+      return fetch("/api/books")
+        .then((r) => r.json())
+        .then((list) => { books = list; render(); });
+    })
+    .catch((err) => showPublishStatus(err.message, true))
+    .finally(() => {
+      publishBtn.disabled = false;
+      publishInput.value = ""; // allow re-selecting the same file
+    });
+});
