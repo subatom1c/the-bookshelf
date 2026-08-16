@@ -4,6 +4,7 @@ Simple self-hosted digital bookshelf for reading PDF's for any device.
 # Features
 ```text
 - Reading without downloading
+- Resumes each book on the page you left off
 - Self Host anywhere
 - Works on desktop and mobile
 ```
@@ -21,6 +22,7 @@ the-bookshelf/
 ├── books/
 ├── css/
 ├── covers/
+├── pdfjs/        # vendored PDF.js reader (tracks reading progress)
 ├── index.html
 └── README.md
 ```

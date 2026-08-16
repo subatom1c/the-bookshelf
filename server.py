@@ -15,11 +15,12 @@ BOOKS_DIR = BASE_DIR / "books"
 COVERS_DIR = BASE_DIR / "covers"
 CSS_DIR = BASE_DIR / "css"
 JS_DIR = BASE_DIR / "js"
+PDFJS_DIR = BASE_DIR / "pdfjs"
 LIBRARY_FILE = BASE_DIR / "library.json"
 
 
 def load_library():
-    """Per-book state: {book_id: {"favorite": bool, "notes": str}}."""
+    """Per-book state: {book_id: {"favorite": bool, "notes": str, "page": int}}."""
     if LIBRARY_FILE.exists():
         try:
             return json.loads(LIBRARY_FILE.read_text(encoding="utf-8"))
@@ -35,7 +36,7 @@ def save_library(library):
 
 
 def entry_for(library, book_id):
-    return library.setdefault(book_id, {"favorite": False, "notes": ""})
+    return library.setdefault(book_id, {"favorite": False, "notes": "", "page": 1})
 
 
 @app.route("/")
@@ -59,6 +60,8 @@ def books():
             "cover": f"/covers/{quote(book_id)}.png",
             "favorite": bool(state.get("favorite", False)),
             "notes": state.get("notes", ""),
+            # last page the reader was on, so the book reopens where you left off
+            "page": max(1, int(state.get("page", 1) or 1)),
         })
 
     return jsonify(result)
@@ -88,6 +91,25 @@ def set_notes():
     entry_for(library, book_id)["notes"] = str(data.get("notes", ""))
     save_library(library)
     return jsonify({"ok": True})
+
+
+@app.route("/api/progress", methods=["POST"])
+def set_progress():
+    """Remember the page the reader is on so the book reopens there."""
+    data = request.get_json(silent=True) or {}
+    book_id = data.get("id")
+    if not book_id:
+        return jsonify({"error": "missing id"}), 400
+
+    try:
+        page = int(data.get("page", 1))
+    except (TypeError, ValueError):
+        page = 1
+
+    library = load_library()
+    entry_for(library, book_id)["page"] = max(1, page)
+    save_library(library)
+    return jsonify({"ok": True, "page": library[book_id]["page"]})
 
 
 @app.route("/api/publish", methods=["POST"])
@@ -140,6 +162,11 @@ def serve_css(filename):
 @app.route("/js/<path:filename>")
 def serve_js(filename):
     return send_from_directory(JS_DIR, filename)
+
+
+@app.route("/pdfjs/<path:filename>")
+def serve_pdfjs(filename):
+    return send_from_directory(PDFJS_DIR, filename)
 
 
 @app.route("/favicon.ico")

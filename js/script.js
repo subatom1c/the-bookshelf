@@ -107,7 +107,11 @@ favToggle.addEventListener("click", () => {
 // --- Reader ---
 function openBook(book) {
   currentBook = book;
-  viewer.src = book.pdf;
+
+  // Open the PDF.js viewer. We restore the saved page programmatically once the
+  // viewer is ready (see trackProgress) rather than via a URL #page= hash, which
+  // the viewer doesn't reliably honor on initial load.
+  viewer.src = "/pdfjs/web/viewer.html?file=" + encodeURIComponent(book.pdf);
 
   library.style.display = "none";
   reader.style.display = "block";
@@ -117,6 +121,64 @@ function openBook(book) {
   notesText.value = book.notes || "";
   notesStatus.textContent = "";
   notesPanel.style.display = "none";
+
+  trackProgress(book);
+}
+
+// --- Reading progress: follow the viewer's page and save it ---
+let progressTimer = null;
+
+function trackProgress(book) {
+  const startPage = book.page && book.page > 1 ? book.page : 1;
+
+  const attach = () => {
+    const app = viewer.contentWindow && viewer.contentWindow.PDFViewerApplication;
+    if (!app || !app.initializedPromise) return false;
+
+    app.initializedPromise.then(() => {
+      // Jump to the saved page. If the pages are already laid out we can set it
+      // now; otherwise wait for the viewer's "pagesinit" event.
+      const goToStart = () => {
+        if (startPage > 1 && currentBook && currentBook.id === book.id) {
+          app.pdfViewer.currentPageNumber = startPage;
+        }
+      };
+      if (app.pdfViewer && app.pdfViewer.pagesCount > 0) {
+        goToStart();
+      } else {
+        app.eventBus.on("pagesinit", goToStart);
+      }
+
+      app.eventBus.on("pagechanging", (evt) => {
+        // Ignore late events from a book we've already closed/switched away from.
+        if (!currentBook || currentBook.id !== book.id) return;
+        currentBook.page = evt.pageNumber;
+        saveProgress(book.id, evt.pageNumber);
+      });
+    });
+    return true;
+  };
+
+  viewer.addEventListener("load", function onLoad() {
+    viewer.removeEventListener("load", onLoad);
+    if (attach()) return;
+    // The viewer app may not be ready the instant the iframe loads; poll briefly.
+    let tries = 0;
+    const poll = setInterval(() => {
+      if (attach() || ++tries > 40) clearInterval(poll);
+    }, 100);
+  });
+}
+
+function saveProgress(id, page) {
+  clearTimeout(progressTimer); // debounce rapid page turns into one save
+  progressTimer = setTimeout(() => {
+    fetch("/api/progress", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, page }),
+    }).catch(() => {});
+  }, 800);
 }
 
 function goToMenu() {
