@@ -3,3 +3,4 @@ nmap.txt
 venv
 covers/*
 library.json
+__pycache__/
