@@ -55,8 +55,11 @@ def books():
         result.append({
             "id": book_id,
             "title": book_id.replace("_", " "),
-            # quote() so filenames with spaces/special chars produce valid URLs
-            "pdf": f"/books/{quote(pdf.name)}",
+            # Raw (unencoded) path: the client encodeURIComponent()s this for the
+            # viewer's ?file= param, and PDF.js's viewer re-encodes it once more
+            # before fetching. Pre-quoting here would double-encode filenames with
+            # spaces/parens (%20 -> %2520), 404ing every such book.
+            "pdf": f"/books/{pdf.name}",
             "cover": f"/covers/{quote(book_id)}.png",
             "favorite": bool(state.get("favorite", False)),
             "notes": state.get("notes", ""),
